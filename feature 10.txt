@@ -1,0 +1,116 @@
+
+
+
+
+/*procedure to Allow a guest to make payment given booking ID, payment method, and payment date, update is made to the booking info table where payout status is updated and host is messaged regarding it*/
+
+/*function Checks whether the booking exists and is approved*/ 
+set serveroutput on;
+create or replace function booking_exist(book_id in int) 
+return int
+IS
+pay_status int;
+approved_status int;
+
+BEGIN
+pay_status :=0;
+approved_status :=0;
+
+select Current_Status,Payout_status INTO approved_status, pay_status FROM booking_info WHERE booking_id = book_id;
+
+/*dbms_output.put_line('Current_Status :'|| approved_status);*/
+/*dbms_output.put_line('pay_status :'|| pay_status);*/
+
+if approved_status = 1 AND pay_status != 1 then
+return 1;
+else 
+return 0;
+end if;
+
+exception
+	when no_data_found then
+ return -1;
+
+END;
+
+/*function checks payment date is at least one day before checkin date*/
+
+set serveroutput on;
+create or replace function check_pay_dt(book_id in int,pay_dt in date) 
+return int
+IS
+chek_in_dt date;
+
+BEGIN
+
+select BCHECKIN_TIME INTO chek_in_dt FROM booking_info WHERE booking_id = book_id;
+
+IF chek_in_dt IS NOT NULL then
+
+/*dbms_output.put_line('BCHECKIN_DT :'|| chek_in_dt);*/
+
+if pay_dt <chek_in_dt then
+/*dbms_output.put_line('SMALLER');*/
+return 1;
+else 
+/*dbms_output.put_line('BIGGER');*/
+return 0;
+
+end if;
+
+end if;
+exception
+	when no_data_found then
+ return -1;
+
+END;
+--------procedure
+
+create or replace procedure make_payment(book_id in int, pay_dt in date, pay_mtd in varchar)IS
+
+pay_status int;/*payout status*/
+approved_status int;/* current status of guest*/
+booking_exist_check int;
+dt_check int;
+
+BEGIN
+ 
+booking_exist_check := booking_exist(book_id);
+dt_check := check_pay_dt(book_id,pay_dt);
+
+/*dbms_output.put_line('booking_exist_check :'|| booking_exist_check);*/
+/*dbms_output.put_line('dt_check :'|| dt_check);*/
+
+if booking_exist_check =1 AND dt_check =1 then
+update booking_info set PAYOUT_STATUS = 1 where BOOKING_ID = book_id;
+
+insert into messages values(message_sequence.NEXTVAL,(select USER_ID from booking_info where BOOKING_ID = book_id),'Payment successful',(select CURRENT_DATE from dual));
+dbms_output.put_line('PAYMENT SUCCESSFULL');
+
+update billing_info set PAYMENT_METHOD = pay_mtd where 
+USER_ID = (select USER_ID from booking_info where BOOKING_ID = book_id)
+AND LISTING_ID = (select LISTING_ID from booking_info where BOOKING_ID = book_id);
+
+else
+  dbms_output.put_line('PAYMENT CANT BE MADE');
+  if booking_exist_check = 0 then
+  dbms_output.put_line('BOOKING DOES NOT EXIST OR ALREADY PAID');
+  elsif dt_check = 0 then
+  dbms_output.put_line('LATE PAYMENT');
+elsif dt_check = -1 then
+  dbms_output.put_line('NO RECORD FOUND');
+elsif booking_exist_check = -1 then
+  dbms_output.put_line('NO RECORD FOUND');
+  end if;
+end if;
+
+END;
+
+----------execute procedure
+Select * from Booking_info;
+Select * from Billing_info;
+exec make_payment(5,date '2017-9-13', 'BoA 1234567893692581');
+exec make_payment(1,date '2017-9-10', 'discover 1234567893692587');
+exec make_payment(3,date '2017-9-11', 'American Express 1234567893692581');
+Select * from Booking_info;
+Select * from Billing_info;

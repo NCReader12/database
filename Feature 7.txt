@@ -1,0 +1,87 @@
+set serveroutput on;
+CREATE OR replace PROCEDURE Usp_booking_request(l_id IN INT,g_id IN INT,c_in IN
+
+DATE,c_out IN DATE,tot_adult IN INT,tot_kids IN INT)
+
+IS
+
+  loop_conut INT := 0;
+  rat float;
+
+  CURSOR c1 IS
+
+    SELECT b.listing_id
+
+    FROM   house_details b,users_rating r,price_period p,Guest_details g
+
+ 
+
+     WHERE  p.LISTING_ID = b.LISTING_ID
+
+             AND r.rating_usersid = b.user_id 
+			 
+			and g.guest_id= b.user_id
+
+           AND p.start_date <= c_in
+
+           AND p.end_date >= c_out
+
+            
+
+           AND b.listing_id = l_id
+
+           AND g.guest_id= g_id
+
+           
+
+          -- AND b.no_of_adult >= tot_adult
+
+          -- AND b.no_of_kids >= tot_kids
+
+           AND b.min_stay <= ( c_out - c_in )
+
+           
+
+           AND b.listing_id NOT IN (select
+
+                                       listing_id
+
+                                      from booking_info b
+
+                                    where (c_in <= cast(checkin_time as date) and cast(checkout_time as date) <= c_out)
+
+                                   AND (c_in <= cast(checkin_time as date) and cast(checkin_time as date) <= c_out)
+
+                                      AND UPPER(Current_STATUS) IN ('APPROVED', 'REQUESTED'));
+									  
+									  
+									  
+
+BEGIN
+
+FOR item IN c1 LOOP
+LOOP_CONUT := LOOP_CONUT + 1;
+   dbms_output.Put_line('sai');
+
+--
+    END LOOP;
+--
+    IF LOOP_CONUT > 0 THEN
+
+      dbms_output.Put_line('The booking is already exists for the Listing ID, '||l_id);
+
+    ELSE
+
+      INSERT INTO booking_info VALUES (book_id_seq.nextval,g_id,l_id,c_in,c_out,2,0,(tot_adult + tot_kids));
+      select avg(rating) into rat from users_rating;
+--
+      dbms_output.Put_line('Booking Request Successful and the average rating of the Guest ID, '||rat);
+--
+    END IF;
+END;
+set serveroutput on;
+Exec Usp_booking_request(3, 105,date '2017-09-17',date '2017-09-18',1,1)
+select * from booking_info;
+set serveroutput on;
+
+

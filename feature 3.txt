@@ -1,0 +1,21 @@
+FEATURE 3
+---------------------------------------------------------------
+Create or replace
+PROCEDURE read_msg (userid int, inputdate timestamp) IS
+Cursor c1 is select message from message where user_id = userid and start_date = inputdate;
+msg varchar;
+BEGIN
+Open c1;
+Loop
+    fetch c1 into msg;
+    exit when c1%notfound;
+    dbms_output.put_line(msg);
+End loop;
+END;
+exception
+when no_data_found then
+ dbms_output.put_line('No message found');
+end;
+close c1;
+
+exec read_msg(userid,inputdate);

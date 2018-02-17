@@ -1,0 +1,255 @@
+Drop table messages;
+drop table users_rating;
+Drop table Price_period;
+Drop table billing_info;
+Drop table booking_info;
+Drop table House_details;
+Drop table Guest_details;
+Drop table users;
+--------
+
+
+-------
+create table users
+(
+user_id int,
+user_type int,
+name char(50),
+emailid varchar(50),
+password varchar(50),
+primary key(user_id)
+);
+-----------
+Drop sequence users_seq;
+create sequence users_seq start with 100 increment by 1 minvalue 1;
+
+insert into users values
+(users_seq.NEXTVAL, 3,'Eve Eden','eden1@gmail.com', 'EdA01');
+
+insert into users values
+(users_seq.NEXTVAL,2, 'Adam Grub','grub11@gmail.com', 'GrA02');
+
+insert into users values
+(users_seq.NEXTVAL,2, 'Sun Flint','flint19@gmail.com', 'FlA03');
+
+insert into users values
+(users_seq.NEXTVAL,2 ,'Ram Rao','rao20@gmail.com', 'RaA04');
+
+insert into users values
+(users_seq.NEXTVAL,2 ,'Sia Gul','gul13@gmail.com', 'GuA05');
+
+insert into users values
+(users_seq.NEXTVAL,3,'Eve Eden','edesn7@gmail.com','eden1');
+
+insert into users values
+(users_seq.NEXTVAL,1,'Sam Mick','mick34@gmail.com','mick1');
+
+insert into users values
+(users_seq.NEXTVAL,1,'Sue cho','cho4@gmail.com','cho4');
+
+insert into users values
+(users_seq.NEXTVAL,1,'Raj Pak','pak2@gmail.com','pakk2');
+
+insert into users values
+(users_seq.NEXTVAL,1,'Han Zhu','zhu3@gmail.com','zhu22');
+--------
+/* user_type is an integer where host=1,guest=2, host/guest=3*/
+---
+create table Guest_details
+(
+Guest_id int,
+name char(50),
+phonenumber int,
+street varchar(50),
+city varchar(50),
+state varchar(50),
+zipcode int,
+gender varchar(50),
+primary key(Guest_id),
+foreign key(Guest_id) references users
+);
+---
+
+
+insert into Guest_details values
+(101, 'Eve Eden',17894561230, 'Runnyroad', 'Baltimore', 'MD', 001011,'f');
+
+insert into Guest_details values
+(102, 'Sam Mick',17894561231, 'Sunnysip', 'Baltimore', 'MD', 001012,'m');
+
+insert into Guest_details values
+(103, 'Sue Cho', 17894561232, 'Ramrag','Baltimore', 'MD', 001013,'f');
+
+insert into Guest_details values
+(104, 'Raj Pak', 17894561233, 'Amway', 'Baltimore', 'MD',001014,'m');
+
+insert into Guest_details values
+(105, 'Han Zhu', 17894561234, 'Bokley', 'Baltimore', 'MD',001015,'m');
+
+-------
+create table house_details
+(listing_id int,
+user_id int,
+street varchar(50),
+city varchar(50),
+state varchar(50),
+zipcode int,
+no_of_bedrooms int,
+no_of_beds int,
+no_of_bathrooms int,
+max_capacity int,
+wifi varchar(5),
+tv varchar(5),
+fridge varchar(5),
+washer_dryer varchar(5),
+AC_heater varchar(5),
+car_parking varchar(5),
+min_stay int,
+max_stay int,
+checkin_time timestamp,
+checkout_time timestamp,
+Booking_type Varchar(50),
+primary key(listing_id),
+foreign key(user_id) references users
+);
+
+
+DROP sequence  listing_id_sequence;
+create sequence listing_id_sequence start with 1 increment by 1 minvalue 1;
+----
+insert into house_details values (listing_id_sequence.NEXTVAL,101,'pratt street','arbutus','maryland',21225,2,3,2,4,'yes','yes','yes','yes','yes','yes',2,3,timestamp '2017-9-12 06:41:00.00 -05:00',timestamp '2017-9-14 06:41:00.00 -05:00','Bunglow');
+insert into house_details values(listing_id_sequence.NEXTVAL,102,'big street','arbutus','maryland',21225,2,3,2,4,'yes','yes','yes','yes','no','yes',2,3,timestamp '2017-9-15 06:41:00.00 -05:00',timestamp '2017-9-17 06:41:00.00 -05:00','Town House');
+insert into house_details values (listing_id_sequence.NEXTVAL,103,'light street','ellicott','maryland',21227,2,3,2,3,'yes','yes','yes','no','yes','yes',2,3,timestamp '2017-9-16 06:41:00.00 -05:00',timestamp '2017-9-19 06:41:00.00 -05:00','Beach House');
+insert into house_details values (listing_id_sequence.NEXTVAL,104,'james street','washington','maryland',21228,2,5,2,3,'yes','yes','yes','no','yes','yes',2,3,timestamp '2017-9-20 06:41:00.00 -05:00',timestamp '2017-9-21 06:41:00.00 -05:00','Town House');
+insert into house_details values (listing_id_sequence.NEXTVAL,105,'harbour street','vancouver','maryland',21229,2,4,2,3,'yes','yes','no','no','yes','yes',2,6,timestamp '2017-9-23 06:41:00.00 -05:00',timestamp '2017-9-24 06:41:00.00 -05:00','Town House');
+-----
+
+-----
+
+
+-----
+create table booking_info
+(
+booking_id int,
+user_id int,
+listing_id int,
+Bcheckin_time timestamp,
+Bcheckout_time timestamp,
+Current_Status int,
+Payout_status int,
+No_of_guests int,
+primary key(booking_id),
+foreign key(user_id) references users,
+foreign key(listing_id) references house_details
+);
+
+Drop sequence book_id_seq;
+create sequence book_id_seq start with 1 increment by 1 minvalue 1;
+
+insert into booking_info values(book_id_seq.NEXTVAL,101,1,timestamp '2017-9-12 06:41:00.00 -05:00',timestamp '2017-9-14 06:41:00.00 -05:00',1,1,3);
+insert into booking_info values(book_id_seq.NEXTVAL,101,2,timestamp '2017-9-15 06:41:00.00 -05:00',timestamp '2017-9-17 06:41:00.00 -05:00',2,0,3);
+insert into booking_info values(book_id_seq.NEXTVAL,103,3,timestamp '2017-9-13 06:41:00.00 -05:00',timestamp '2017-9-15 06:41:00.00 -05:00',2,0,3);
+insert into booking_info values(book_id_seq.NEXTVAL,104,4,timestamp '2017-9-24 06:41:00.00 -05:00',timestamp '2017-9-29 06:41:00.00 -05:00',-1,0,3);
+insert into booking_info values(book_id_seq.NEXTVAL,105,5,timestamp '2017-9-11 06:41:00.00 -05:00',timestamp '2017-9-14 06:41:00.00 -05:00',0,0,3);
+------
+create table billing_info
+(
+user_id int,
+listing_id int,
+no_of_days int,
+rent int,
+tax varchar(50),
+total_rent int,
+payment_method varchar(50),
+foreign key(user_id) references users,
+foreign key(listing_id) references House_details
+);
+
+insert into billing_info values
+(104,1,4,400,'5perc',440, 'Discover 4563217891234567');
+
+insert into billing_info values
+(102,2,2,500,'5perc',525, 'Discover 4563217891234545');
+
+insert into billing_info values
+(101,3,1,600,'5perc',612, 'American Express 1472583692583147');
+
+insert into billing_info values
+(103,4,3,400,'5perc',420,'American Express 1472545692583147');
+
+insert into billing_info values
+(105,5,5,300,'5perc',330,'American Express 1472583692584547');
+-----
+create table price_period
+(
+    listing_id int,
+    Period_id int,
+    start_date date not null,
+    end_date date not null,
+    price int,
+    foreign key(listing_id) references house_details
+);
+
+
+
+DROP sequence  Period_id_sequence;
+create sequence Period_id_sequence start with 1 increment by 1 minvalue 1;
+
+
+insert into price_period values(1,Period_id_sequence.NEXTVAL,date '2016-9-7',date '2017-9-17',80);
+insert into price_period values(2,Period_id_sequence.NEXTVAL,date '2017-6-1',date '2017-9-27',110);
+insert into price_period values(3,Period_id_sequence.NEXTVAL,date '2017-9-7',date '2018-6-1',90);
+insert into price_period values(4,Period_id_sequence.NEXTVAL,date '2017-9-17',date '2017-9-27',70);
+---
+
+create table users_rating 
+(
+Rating_usersid int,
+recommendations varchar(500),
+rating float,
+foreign key(rating_usersid) references users
+);
+-----
+insert into users_rating values 
+(101,'good service',2.5);
+insert into users_rating values
+(102,'very clean',3.6);
+insert into users_rating values
+(103,'spacious',4);
+insert into users_rating values
+(104,'excellent experience',5);
+insert into users_rating values
+(105,'none',4.5);
+
+------
+Create table Messages (
+Message_id int,
+User_ID int,
+Message varchar(50),
+Message_date date,
+primary key (Message_id,User_id),
+foreign key (User_id) references Users
+);
+----
+Drop sequence message_sequence;
+Create sequence message_sequence start with 1 increment by 1 minvalue 1;
+------
+insert into messages values
+(message_sequence.NEXTVAL,101,'ALREADY PAID : BOOKING CAN NOT BE CANCELLED', date '2016-8-9');
+insert into messages values
+(message_sequence.NEXTVAL,102,'ALREADY PAID : BOOKING CAN NOT BE CANCELLED ', date '2017-7-9');
+insert into messages values
+(message_sequence.NEXTVAL,103,'BOOKING ALREADY CANCELLED', date '2016-9-9');
+insert into messages values
+(message_sequence.NEXTVAL,104,'BOOKING ALREADY CANCELLED', date '2017-8-13');
+insert into messages values
+(message_sequence.NEXTVAL,105,'NO BOOKING FOUND', date '2017-5-27');
+-----
+Select * from messages;
+Select * from users_rating;
+Select * from Price_period;
+Select * from billing_info;
+Select * from booking_info;
+Select * from House_details;
+Select * from Guest_details;
+Select * from users;

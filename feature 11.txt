@@ -1,0 +1,44 @@
+/*Allows a guest to cancel a booking if not paid yet given a booking id*/
+
+set serveroutput on;
+create or replace procedure cancel_booking(book_id in int)IS
+pay_status int;
+approved_status int;
+
+BEGIN
+pay_status :=0;/* payout status*/
+approved_status :=0;
+
+select Current_Status,Payout_status INTO approved_status, pay_status FROM booking_info WHERE booking_id = book_id;
+
+dbms_output.put_line('Current_Status :'|| approved_status);
+dbms_output.put_line('pay_status :'|| pay_status);
+
+if approved_status = 1 then
+    if pay_status != 1 then
+      dbms_output.put_line('BOOKING CAN BE CANCELLED');
+      insert into messages values(message_sequence.NEXTVAL,(select USER_ID from booking_info where BOOKING_ID = book_id),'BOOKING CANCELLED',(select CURRENT_DATE from dual));
+      update booking_info set Current_Status = -1 where BOOKING_ID = book_id;
+	  --0 or what ever th evalue is 
+    else
+      dbms_output.put_line('ALREADY PAID : BOOKING CAN NOT BE CANCELLED');
+      insert into messages values(message_sequence.NEXTVAL,(select USER_ID from booking_info where BOOKING_ID = book_id),'ALREADY PAID : BOOKING CAN NOT BE CANCELLED',(select CURRENT_DATE from dual));
+
+    end if;
+elsif approved_status = -1 then
+  dbms_output.put_line('BOOKING ALREADY CANCELLED');
+      insert into messages values(message_sequence.NEXTVAL,(select USER_ID from booking_info where BOOKING_ID = book_id),'BOOKING ALREADY CANCELLED',(select CURRENT_DATE from dual));
+--3rd condn to be added IF ANY for CURRENT_STATUS
+end if;
+exception
+	when no_data_found then
+ dbms_output.put_line('NO BOOKING FOUND');
+
+
+END;
+
+exec cancel_booking(1);
+exec cancel_booking(2);
+exec cancel_booking(3);
+exec cancel_booking(4);
+exec cancel_booking(5);

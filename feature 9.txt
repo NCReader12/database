@@ -1,0 +1,32 @@
+create or replace procedure bookingrequest(user_id in int)
+as
+
+cursor c1 is select b.booking_id, g.name, b.listing_id, trunc(Bcheckin_time), trunc(Bcheckout_time), b.No_of_guests, b.Current_Status
+ from booking_info b, Guest_details g,users u
+where b.user_id=g.guest_id and b.user_id=u.user_id and b.Current_Status=1 ;
+
+b_id       int;
+g_name     char(50);
+l_id       int;
+check_in   timestamp;
+check_out  timestamp;
+no_guests  int;
+c_status   int;
+
+begin
+open c1;
+
+loop
+
+fetch c1 into b_id,g_name,l_id,check_in,check_out,no_guests,c_status;
+
+exit when c1%notfound;
+dbms_output.put_line('booking_id : '||b_id||', name : '||g_name||', listing_id : '||l_id||', Check in date: '||check_in||', check out date: '||check_out||', Number of Guest(s) : '||no_guests || ', status: '||c_status);
+end loop;
+close c1;
+end;
+
+
+exec bookingrequest(106);
+exec bookingrequest(107);
+exec bookingrequest(108);

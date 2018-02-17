@@ -1,0 +1,49 @@
+CREATE OR REPLACE PROCEDURE USP_Get_Cost(in_city IN VARCHAR, in_state IN VARCHAR, ch_in IN DATE, ch_out IN DATE)
+IS
+    LSTNGID number;
+    Strt     varchar(50);
+    Cty  varchar(30);
+    ST varchar(30);
+    ZP_Cd    varchar(10);
+    total_price float;
+   diff_new INT;
+CURSOR c1 IS
+SELECT sum(price)*1.05, STREET, CITY, STATE, ZIPcode, LID, SUM(diff)
+FROM
+(SELECT c.price as price, Street, City, State, ZIPCODE, a.listing_id AS LID ,
+(trunc(end_date) - trunc(start_date)) AS diff,
+ ((CASE WHEN (trunc(start_date) > ch_out and trunc(end_date) < ch_out)THEN ch_out ELSE trunc(start_date) END) -
+  (CASE WHEN (trunc(end_date) < ch_in and ch_in < trunc(start_date))THEN ch_in ELSE trunc(end_date) END)) * PRICE AS tprice
+from house_details a, booking_info b, price_period c
+    where a.LISTING_ID = b.LISTING_ID
+and a.listing_id=c.listing_id AND a.STATE = in_state   AND a.CITY = in_city  AND trunc(start_date) <= ch_in  AND trunc(end_date) >= ch_out 
+ AND a.LISTING_ID NOT IN (select a.LISTING_ID
+                       from house_details a, booking_info b, price_period c
+                        where a.LISTING_ID = b.LISTING_ID and a.listing_id=c.listing_id AND (ch_in <= a.checkin_time and a.checkin_time <= ch_out)
+                          AND (ch_in <= a.checkout_time and a.checkout_time <= ch_out)
+                            AND UPPER(Current_STATUS) IN ('APPROVED', 'REQUESTED')
+))
+GROUP BY price, STREET, CITY, STATE, ZIPcode, LID;
+BEGIN
+   open c1;   
+
+    LOOP
+        FETCH c1 INTO  total_price,Strt,Cty,ST, ZP_Cd,LSTNGID,diff_new;
+     EXIT WHEN c1%NOTFOUND;
+
+     IF (diff_new < (ch_out - ch_in))
+     THEN dbms_output.Put_line( 'Available days' ||'('||diff_new||')' ||' is lesser than the duration of stay' ||'('||(ch_out - ch_in)||')'|| ' for the listing ID, ' || LSTNGID);
+     ELSE
+   dbms_output.Put_line( 'Available days for the listing ID: ' || LSTNGID);
+     dbms_output.Put_line('Listing ID: ' || LSTNGID);
+    dbms_output.Put_line('ADDRESS: '|| Strt||', ' || Cty ||', '|| ZP_Cd);
+    dbms_output.Put_line('Total Cost: ' || total_price);
+    END IF;
+    end loop;
+  close c1;
+end;
+set serveroutput on;
+EXEC USP_Get_Cost('arbutus', 'maryland', to_date('12-SEP-17' , 'DD-MON-YY'), to_date('14-SEP-17' , 'DD-MON-YY'));
+EXEC USP_Get_Cost('arbutus', 'maryland', to_date('14-SEP-17' , 'DD-MON-YY'), to_date('12-SEP-17' , 'DD-MON-YY'));
+EXEC USP_Get_Cost('arbutus', 'maryland', to_date('14-SEP-15' , 'DD-MON-YY'), to_date('12-SEP-15' , 'DD-MON-YY'));
+EXEC USP_Get_Cost('arbutus', 'maryland', to_date('14-SEP-16' , 'DD-MON-YY'), to_date('12-SEP-17' , 'DD-MON-YY'));

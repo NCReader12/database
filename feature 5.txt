@@ -1,0 +1,31 @@
+
+create sequence pd_id_sequence start with 6 increment by 1 minvalue 1;
+
+create or replace procedure pricePeriod(listingid in int,s_date in date,e_date in date,price_night in int) 
+is
+
+avail_period int;
+begin
+    
+select count(*) into avail_period from price_period where listing_id=listingid and start_date>=s_date and end_date<=e_date;
+
+if avail_period>0 then 
+
+dbms_output.put_line('period exists');
+
+end if;
+
+insert into price_period(listing_id,period_id,start_date,end_date,price) values(listingid,p_id_sequence.nextval,s_date,e_date,price_night);
+
+
+exception
+    when no_data_found  then
+        dbms_output.put_line('no such period exists');
+end;
+
+
+exec pricePeriod(1,date'2017-10-01',date'2017-12-31',100);
+exec pricePeriod(3,date'2017-12-01',date'2017-12-31',110);
+exec pricePeriod(3,date'2018-01-01',date'2018-01-18',150);
+
+exec pricePeriod(2,date'2017-06-01',date'2017-09-27',160);

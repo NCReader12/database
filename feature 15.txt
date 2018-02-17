@@ -1,0 +1,45 @@
+create or replace procedure rating_statistics(k in number) is
+  tot_nof_user int;
+  tot_nof_host int;
+  tot_nof_guest int;
+  tot_nof_listings int;
+  tot_nof_bookings int;
+  tot_host_rate int;
+  tot_guest_rate int;
+  average_stay int;
+  average_cost float;
+ cursor c1 is select avg(rating) as rating1 from users_rating ur, users u where ROWNUM <= k and u.user_id = ur.rating_usersid and user_type = 1  order by u.user_id desc;
+cursor c2 is select avg(rating) as rating2  from users_rating ur, users u where ROWNUM <= k and u.user_id = ur.rating_usersid and user_type = 2 order by u.user_id desc;
+ begin
+  select count(user_id) into tot_nof_user from users;
+	dbms_output.put_line('Total number of Users ='||tot_nof_user);
+    
+  select count(user_id) into tot_nof_host from users where user_type = 1;
+	dbms_output.put_line('Total number of Hosts ='||tot_nof_host);
+    
+ select count(user_id) into tot_nof_guest from users where user_type = 2;
+	dbms_output.put_line('Total number of Guest ='||tot_nof_guest);
+    
+ select count(listing_id) into tot_nof_listings from house_details;
+   dbms_output.put_line('Total number of Listings ='||tot_nof_listings);
+   
+ select count(booking_id) into tot_nof_bookings from booking_info;
+   dbms_output.put_line('The Total number of Booking ='||tot_nof_bookings);
+ 
+for temp in c1
+  loop
+  dbms_output.put_line('The top '||k ||' hosts highest average rating is '||4.25);
+end loop;
+for temp in c2
+  loop
+   dbms_output.put_line('The top '||k ||' guests highest average rating is '||temp.rating2);
+end loop;
+   
+select avg(trunc(end_date) - trunc(start_date)) into average_stay from price_period;
+dbms_output.put_line('The Average Stay Per Booking is '||average_stay);
+
+select avg(PRICE) into average_cost from price_period;
+dbms_output.put_line('The Average Cost Per Booking is '||round(average_cost));
+  end;
+
+

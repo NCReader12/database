@@ -1,0 +1,59 @@
+/*Allows a host to add listing*/
+
+
+--------------------------------------
+CREATE OR REPLACE procedure listing_management(
+user_id in int,
+street in varchar,
+city in varchar, 
+state in varchar,
+ zipcode in int, 
+no_of_bedrooms in int,
+no_of_beds int, 
+no_of_bathrooms in int, 
+max_capacity in int, 
+wifi in varchar,
+tv in varchar,
+fridge in varchar,
+washer_dryer in varchar, 
+AC_heater in varchar,
+car_parking in varchar, 
+min_stay in int,
+max_stay in int, 
+checkin_time in timestamp,
+checkout_time timestamp,
+Booking_type varchar /* type of hosting*/
+) IS
+
+new_listing_id int;
+
+BEGIN 
+
+new_listing_id :=-1;
+/* To allow a host to add listing */
+INSERT INTO house_details values(listing_id_sequence.nextval, user_id,street,city, state, zipcode, no_of_bedrooms,no_of_beds, no_of_bathrooms, max_capacity, wifi, tv,fridge, washer_dryer, AC_heater, car_parking, min_stay, max_stay, checkin_time, checkout_time, Booking_type) RETURNING LISTING_ID INTO new_listing_id;
+
+/*Just to check if insert is properly done or not(by use of returning clause get the list id of row that is inserted)*/
+if new_listing_id !=-1 then
+dbms_output.put_line('NEW LISTING ADDED WITH ID : '|| new_listing_id);
+else 
+dbms_output.put_line('SOMETHING WENT WRONG');
+end if;
+
+END;
+
+/*input for user id is given under the assumptioon that the host knows his her user id*/
+exec listing_management(106,'Sienna street','linden','maryland',21228,2,3,2,4,'yes','yes','yes','yes','yes','yes',2,3,timestamp '2017-11-1 05:00:00.00 -05:00',timestamp '2017-11-20 09:00:00.00 -05:00','Bunglow');
+exec listing_management(107,'Lowes street','linden','maryland',21225,2,3,2,4,'yes','yes','yes','yes','yes','yes',2,3,timestamp '2017-11-7 05:00:00.00 -05:00',timestamp '2017-11-25 09:00:00.00 -05:00','Town house');
+exec listing_management(108,'Madden street','Awing','maryland',21226,2,3,2,4,'yes','yes','yes','yes','yes','yes',2,3,timestamp '2017-11-7 05:00:00.00 -05:00',timestamp '2017-11-25 09:00:00.00 -05:00','Beach House');
+exec listing_management(109,'FLower street','winnowing','maryland',21222,2,3,2,4,'yes','yes','yes','yes','yes','yes',2,3,timestamp '2017-11-7 05:00:00.00 -05:00',timestamp '2017-11-25 09:00:00.00 -05:00','Beach House');
+exec listing_management(110,'Madden street','Winnowing','maryland',21227,2,3,2,4,'yes','yes','yes','yes','yes','yes',2,3,timestamp '2017-11-7 05:00:00.00 -05:00',timestamp '2017-11-25 09:00:00.00 -05:00','Town House');
+
+select * from house_details;
+
+
+
+
+
+
+

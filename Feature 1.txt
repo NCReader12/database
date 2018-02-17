@@ -1,0 +1,46 @@
+
+
+create or replace function exist_email(email_id in varchar)
+return number
+is
+email_check varchar(50);
+begin
+select emailid into email_check from users where email_id=emailid;
+return 1;
+exception
+when no_data_found then
+return -1;
+end;
+-------
+create or replace procedure signup_user(usertype in int,fname in char,email_id 
+in varchar,password in varchar,phonenumber in int,street in varchar,city in varchar,state in varchar,zipcode 
+in int,gender in varchar)
+is 
+check_email number;
+new_user_id users.user_id%type;
+begin 
+check_email := exist_email(email_id);
+if check_email = 1 then
+dbms_output.put_line('user already exists');
+else
+insert into users values(users_seq.nextval,usertype,fname,email_id,password);
+select user_id into new_user_id from users where emailid=email_id;
+dbms_output.put_line( 'New user, having id : '|| new_user_id );
+if usertype = 2 then
+insert into guest_details values
+(users_seq.currval,fname,phonenumber,street, city,state,zipcode,
+gender);
+elsif usertype = 3 then
+insert into guest_details values
+(users_seq.currval,fname,phonenumber,street, city,state,zipcode,
+gender);
+end if;
+end if;
+end;
+
+set serveroutput on;
+exec signup_user(1,'siddhi','siddhi.shah@umbc','hi',1111,'sitladevi','mahim','mumbai',123,'f');
+exec signup_user(2,'varsha','varsha.shah@umbc','hello',1233,'arbutus','baltimore','no',123,'f');
+exec signup_user(3,'bala','bala@gmail.com','batman',4102,'breach candy','bandra','mumbai',234,'m');
+exec signup_user(1, 'Sam Mick','mick34@gmail.com','mick1',17894561231, 'Sunnysip', 'Baltimore', 'MD', 001012,'m');
+exec signup_user(1, 'Raj Pak','pak2@gmail.com','pakk2',17894561231, 'Sunnysip', 'Baltimore', 'MD', 001012,'m');

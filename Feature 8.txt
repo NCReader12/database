@@ -1,0 +1,80 @@
+
+--------------------------------------------
+/* procedure to allow a host to approve or deny a booking request, given the Booking ID and decision by host that is 1 or O; approved and denied respectively gives output of the changed current status in booking_info table and displays message in messages table*/
+set serveroutput on;
+create or replace procedure approve_deny_booking_request(book_id in int,decision int)IS
+
+pay_status int;
+approved_status int; /* current status of guest*/
+decision_status varchar(10); /* decision made by host*/
+
+--Booking Status values 
+-- 1 : status approved
+---1 : cancelled
+-- 0 : status denied
+-- 2 : requested
+
+BEGIN
+pay_status :=0;
+approved_status :=0;
+decision_status := 'APPROVED'; --default value
+
+if decision = 1 then
+decision_status := 'APPROVED';
+end if;
+if decision = 0 then
+decision_status := 'DENIED';
+end if;
+
+select Current_Status,Payout_status INTO approved_status, pay_status FROM booking_info WHERE booking_id = book_id;
+
+/*dbms_output.put_line('Current_Status :'|| approved_status);*/
+/*dbms_output.put_line('pay_status :'|| pay_status);*/
+
+if approved_status = 2 then  -- 2 = requested 
+	if decision=1 then
+      dbms_output.put_line('BOOKING APPROVED');
+      insert into messages values(message_sequence.NEXTVAL,(select USER_ID from booking_info where BOOKING_ID = book_id),'BOOKING '||decision_status,(select CURRENT_DATE from dual));
+      update booking_info set Current_Status = decision where BOOKING_ID = book_id;
+	else 
+	dbms_output.put_line('BOOKING DENIED');
+      insert into messages values(message_sequence.NEXTVAL,(select USER_ID from booking_info where BOOKING_ID = book_id),'BOOKING '||decision_status,(select CURRENT_DATE from dual));
+      update booking_info set Current_Status = decision where BOOKING_ID = book_id;
+	end if;
+elsif approved_status = -1 then
+      dbms_output.put_line('BOOKING ALREADY CANCELLED');
+elsif approved_status = 0 then
+      dbms_output.put_line('BOOKING ALREADY DENIED');
+elsif approved_status = 1 then
+      dbms_output.put_line('BOOKING ALREADY APPROVED');
+end if;
+exception
+  when no_data_found then
+  dbms_output.put_line('NO BOOKING FOUND');
+
+END;
+
+-----
+---1.no booking found
+Exec approve_deny_booking_request(7,1);
+select * from Booking_info;
+select * from Messages;
+---------2.to deny booking here current status was requested 1st
+select * from Booking_info;
+select * from Messages;
+Exec approve_deny_booking_request(2,0);
+select * from Booking_info;
+select * from Messages;
+---------to approve a booking
+
+select * from Booking_info;
+select * from Messages;
+Exec approve_deny_booking_request(3,1);
+select * from Booking_info;
+select * from Messages;
+
+Exec approve_deny_booking_request(4,1);
+---booking already cancelled
+Exec approve_deny_booking_request(5,1);
+----already denied
+select * from Booking_info;

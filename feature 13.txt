@@ -1,0 +1,67 @@
+
+
+create or replace function review_host(temp_user_id in number, temp_user_type in number,  temp_recmd in varchar, temp_rating in number)
+return varchar
+is
+
+temp_listing_id NUMBER;
+temp_booking_id NUMBER;
+temp_score number;
+
+cursor c1 is
+
+SELECT hd.LISTING_ID,BI.BOOKING_ID INTO temp_listing_id,temp_booking_id
+FROM
+house_details hd,BOOKING_INFO BI WHERE BI.USER_ID=temp_user_id AND
+BI.listing_ID= hd.listing_ID AND PAYOUT_STATUS='1';
+
+begin
+open c1;
+loop
+
+Fetch c1 into temp_Listing_ID,temp_booking_id;
+
+exit when c1%notfound;
+
+insert into users_rating(rating_usersid,recommendations,rating)
+
+values(temp_user_id,temp_recmd,temp_rating);
+
+select AVG(RATING) into temp_score from users_rating where rating_usersid = temp_user_id;
+
+update users_rating set rating=((temp_score+temp_rating)/2) where rating_usersid=temp_user_id;
+
+return 'Host Review Successful';
+
+exit when c1%notfound;
+
+end loop;
+end;
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+create or replace procedure host_review(temp_user_id in number,temp_user_type in number, temp_recmd in varchar, temp_rating in number)
+is
+
+nof_booking number;
+msg varchar(100);
+
+begin
+select count(*)  into nof_booking
+from booking_info bi
+where bi.user_id= temp_user_id and
+bi.Payout_status='1';
+
+if nof_booking>0 then
+msg:=review_host(temp_user_id,temp_user_type,temp_recmd, temp_rating);
+dbms_output.put_line(msg);
+
+else
+dbms_output.put_line('No Booking Found');
+end if;
+end;
+------------------------------------------------------------------------------------
+Exec host_review(101,1,'goodservice',2);
+Exec host_review(102,2,'goodservice',2);
+Exec host_review(103,1,'goodservice',2);
+Exec host_review(104,3,'goodservice',2);
+
+-----------------------------------------------------------------------------------------

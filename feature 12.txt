@@ -1,0 +1,34 @@
+create or replace procedure upd_payout (HostID INT, PayoutDt date )
+AS
+
+bkid int;
+total_rent1 int;
+total decimal;
+tot_amount decimal;
+nxt_PAYOUT_ID int;
+nxt_Message_ID int;
+
+Cursor C1 is select booking_id from BOOKING_INFO where PAYOUT_STATUS = 0 AND USER_ID = HostID;
+
+begin
+open c1;
+loop
+--dbms_output.put_line('booking');
+fetch c1 into bkid;
+exit when c1%NOTFOUND OR c1%NOTFOUND IS NULL;
+dbms_output.put_line(bkid);
+select TOTAL_RENT into total_rent1 from billing_info where user_id = HostId;
+total := (total_rent1/1.05) * 0.97;
+dbms_output.put_line(total);
+update booking_info set payout_status = 1;
+--sequence should be created
+insert into MESSAGES values (131,HostId,'Payout generated',(select Current_date from dual));
+dbms_output.put_line('Payment is updated');
+end loop;
+close c1;
+end;
+
+exec upd_payout(101,date '2014-9-24');
+exec upd_payout(102,date '2014-11-24');
+exec upd_payout(103,date '2014-12-24');
+exec upd_payout(104,date '2014-10-24');

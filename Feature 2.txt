@@ -1,0 +1,35 @@
+create or replace function values_return(email_id in varchar,fpassword in varchar)
+return number 
+is
+p varchar(10);
+begin
+select fpassword into p from users where emailid=email_id;
+if p = fpassword then
+return 1;
+else 
+return 0;
+end if;
+exception
+when no_data_found then
+dbms_output.put_line('Invalid username and password');
+return 0;
+end;
+
+create or replace procedure login_users(email in varchar,password in varchar)
+is 
+a number;
+begin
+a := values_return(email,password);
+if a=1 then
+dbms_output.put_line('Successful login');
+else
+dbms_output.put_line('login unsuccessful');
+end if;
+end;
+set serveroutput on;
+
+exec login_users('mick34@gmail.com','mick1');
+exec login_users('siddhi','hiiii');
+exec login_users('12','hiiii');
+
+ 
